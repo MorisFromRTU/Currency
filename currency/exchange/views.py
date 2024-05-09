@@ -51,7 +51,7 @@ class FetchExchangeRates(View):
     data = {}  
     
     def post(self, request):
-        print('starteed')
+        print('started')
         start_date = request.POST.get('startDate')
         end_date = request.POST.get('endDate')
         selected_currency = request.POST.get('selectedCurrency')
@@ -66,10 +66,7 @@ class FetchExchangeRates(View):
     
     def get(self, request):
         print("i started")
-        start_date = self.data.get('start_date')
-        end_date = self.data.get('end_date')
-        selected_currency = self.data.get('selected_currency')
-
+        
         url = 'https://www.finmarket.ru/currency/rates/?id=10148&pv=1&cur=52170&bd=1&bm=2&by=2022&ed=1&'
         response = requests.get(url)
         
@@ -77,9 +74,18 @@ class FetchExchangeRates(View):
             text = response.content.decode('windows-1251')
             soup = BeautifulSoup(text, 'html.parser')
             exchange_rates = {}
-            rows = soup.find('table', class_='fs11').find('tr').find('td').find('option', text=selected_currency)
-            print(rows)
-            return JsonResponse({"rows": rows.text})
+            rows = soup.find('table', class_='fs11').find('tr').find('td').find('select', class_='fs11')
+
+            options = rows.find_all('option')
+            
+
+            options_dict = {}
+
+            for option in options:
+                value = option['value']
+                text = option.text.strip()
+                options_dict[value] = text
+            return JsonResponse({"data": options_dict})
         else:
             print("Failed to fetch currency rates")
             return JsonResponse({"error": "Failed to fetch currency rates"}, status=500)
@@ -91,10 +97,8 @@ class FetchExchangeRates(View):
 class SynchronizeDataView(View):
     def get(self, request):
         pass
-        # Ваш код для синхронизации данных в локальной базе данных
         
     
 class CalculateRelativeExchangeRateView(View):
     def get(self, request):
         pass
-        # Ваш код для расчета относительных изменений курса валют
