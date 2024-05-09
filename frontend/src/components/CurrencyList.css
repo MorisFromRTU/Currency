@@ -1,0 +1,19 @@
+.currency-list-container {
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+.currency-list-header {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.currency-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.currency-item {
+  margin-bottom: 10px;
+  padding-left: 10px; 
+}
