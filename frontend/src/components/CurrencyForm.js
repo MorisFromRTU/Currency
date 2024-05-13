@@ -19,7 +19,6 @@ class CurrencyForm extends Component {
       .then(response => {
         const data = response.data;
         const currencyArray = Object.entries(data);
-        console.log(currencyArray[0][1])
         this.setState({ currencyOptions: currencyArray[0][1] });
       })
       .catch(error => {
@@ -118,9 +117,11 @@ class CurrencyForm extends Component {
         <button type="submit" className="form-button">Показать данные</button>
         
         
-          {Object.keys(this.state.currencyOptions).map(key => <div key={key}>{key}:::{this.state.currencyOptions[key]}</div>)}
-          
-
+          {Object.keys(this.state.currencyOptions).map(key => 
+          <div key={key}>
+            {key}:::{this.state.currencyOptions[key]}
+          </div>)}
+        
       </form>
     );
   }
