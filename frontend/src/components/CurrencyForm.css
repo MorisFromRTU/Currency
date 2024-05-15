@@ -42,3 +42,22 @@
     background-color: #123708;
   }
   
+  .data-list {
+    padding: 0;
+    list-style-type: none;
+  }
+  
+  .data-item {
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  .data-item span {
+    margin-right: 10px;
+  }
+  
+  .data-item span.bold {
+    font-weight: bold;
+  }

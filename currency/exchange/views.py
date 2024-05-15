@@ -5,9 +5,11 @@ from . models import *
 from bs4 import BeautifulSoup
 from rest_framework.response import Response
 from . serializer import *
+import json
 import requests
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
 
 class ReactView(APIView):
     def get(self, request):
@@ -47,25 +49,49 @@ class GetCurrencies(View):
             return HttpResponse("Ошибка при получении списка валют.", status=500)
         
 @method_decorator(csrf_exempt, name='dispatch')        
-class FetchExchangeRates(View):
+class GetCurrenciesCodes(View):
     data = {}  
-    
     def post(self, request):
-        print('started')
-        start_date = request.POST.get('startDate')
-        end_date = request.POST.get('endDate')
-        selected_currency = request.POST.get('selectedCurrency')
-        
-        self.data = {
-            'start_date': start_date,
-            'end_date': end_date,
-            'selected_currency': selected_currency,
-        }
+        body = request.body.decode('utf-8')
+        data = json.loads(body)
 
-        return JsonResponse({'message': 'Data received successfully'})
-    
+        start_date = data.get('startDate')
+        end_date = data.get('endDate')
+        selected_currency = data.get('selectedCurrency')
+
+        start_object = datetime.strptime(start_date, "%Y-%m-%d")
+        end_object = datetime.strptime(end_date, "%Y-%m-%d")
+
+        start_year = start_object.year
+        start_month = start_object.month
+        start_day = start_object.day 
+
+        end_year = end_object.year
+        end_month = end_object.month
+        end_day = end_object.day 
+        url = f'https://www.finmarket.ru/currency/rates/?id=10148&pv=1&cur={selected_currency}&bd={start_day}&bm={start_month}&by={start_year}&ed={end_day}&em={end_month}&ey={end_year}&x=15&y=11#archive'
+        response = requests.get(url)
+        
+
+        if response.status_code == 200:
+            text = response.content.decode('windows-1251')
+            soup = BeautifulSoup(text, 'html.parser')
+            rows = soup.find('table', class_='karramba').find_all('tr')
+            result = []
+            for row in rows:
+                elements = row.find_all('td')
+                temp = []
+                for element in elements:
+                    temp.append(element.text)
+                result.append(temp)
+            
+            
+        return JsonResponse(result[1:], safe=False)
+
+        
+
     def get(self, request):
-        print("i started")
+        print("get started")
         
         url = 'https://www.finmarket.ru/currency/rates/?id=10148&pv=1&cur=52170&bd=1&bm=2&by=2022&ed=1&'
         response = requests.get(url)
@@ -73,7 +99,6 @@ class FetchExchangeRates(View):
         if response.status_code == 200:
             text = response.content.decode('windows-1251')
             soup = BeautifulSoup(text, 'html.parser')
-            exchange_rates = {}
             rows = soup.find('table', class_='fs11').find('tr').find('td').find('select', class_='fs11')
 
             options = rows.find_all('option')
@@ -90,7 +115,13 @@ class FetchExchangeRates(View):
             print("Failed to fetch currency rates")
             return JsonResponse({"error": "Failed to fetch currency rates"}, status=500)
     
+@method_decorator(csrf_exempt, name='dispatch')        
+class GetCurrencyData(View):
 
+    data = {}  
+    
+    def get(self, request):
+        print("i started")
     
             
     

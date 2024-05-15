@@ -6,7 +6,7 @@ class CurrencyForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
+      currenciesData: [],
       startDate: this.getTwoYearsBefore(),
       endDate: this.getCurrentDate(),
       selectedCurrency: 'Доллар США',
@@ -15,7 +15,7 @@ class CurrencyForm extends Component {
   }
 
   componentDidMount() {
-    axios.get('http://localhost:8000/exchange/fetch_exchange_rates/')
+    axios.get('http://localhost:8000/exchange/get_currencies_codes/')
       .then(response => {
         const data = response.data;
         const currencyArray = Object.entries(data);
@@ -25,6 +25,10 @@ class CurrencyForm extends Component {
         console.error('Error fetching data from backend:', error);
       });
   }
+
+  getKeyByValue = (object, value) => {
+    return Object.keys(object).find(key => object[key] === value);
+  };
 
   getCurrentDate() {
     const today = new Date();
@@ -74,17 +78,15 @@ class CurrencyForm extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-
     const formData = {
       startDate: this.state.startDate,
       endDate: this.state.endDate,
-      selectedCurrency: this.state.selectedCurrency
+      selectedCurrency: this.getKeyByValue(this.state.currencyOptions, this.state.selectedCurrency)
     };
 
-    axios.post('http://localhost:8000/exchange/fetch_exchange_rates/', formData)
+    axios.post('http://localhost:8000/exchange/get_currencies_codes/', formData)
       .then(response => {
-        console.log('Response from server:', response.data);
-        const responseData = response.data;
+        this.setState({ currenciesData: response.data});
       })
       .catch(error => {
         console.error('Error sending data to backend:', error);
@@ -116,11 +118,24 @@ class CurrencyForm extends Component {
         </div>
         <button type="submit" className="form-button">Показать данные</button>
         
-        
-          {Object.keys(this.state.currencyOptions).map(key => 
-          <div key={key}>
-            {key}:::{this.state.currencyOptions[key]}
-          </div>)}
+
+      <div>
+        <ul className="data-list">
+          <li className="data-item bold">
+            <span>Дата</span>
+            <span>Кол-во</span>
+            <span>Курс</span>
+            <span>Изменение</span>
+          </li>
+          {this.state.currenciesData.map((row, rowIndex) => (
+            <li key={rowIndex} className="data-item">
+              {row.map((cell, cellIndex) => (
+                <span key={cellIndex}>{cell}</span>
+              ))}
+            </li>
+          ))}
+        </ul>
+      </div>
         
       </form>
     );
